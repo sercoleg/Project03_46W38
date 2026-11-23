@@ -37,3 +37,28 @@ def uv_to_speed_direction(u,v):
     direction.attrs["units"] = "degrees"
 
     return speed, direction
+
+def calculate_shear_exponent(speed10, speed100, min_speed=3,
+                             height_low=10, height_high=100):
+    """Calculate a representative long-term wind shear exponent based on
+    power law."""
+
+    # Exclude low wind speeds from hourly shear calculation
+    valid = speed10 >= min_speed
+
+    alpha_hourly = (np.log(speed100 / speed10) /
+                    np.log(height_high / height_low)).where(valid)
+
+    alpha_monthly = (alpha_hourly.groupby("time.month").median(skipna=True))
+
+    alpha_long_term = alpha_monthly.mean()
+
+    return alpha_long_term
+
+def power_law(speed_ref, height_ref, height, alpha):
+    """Extrapolate wind speed to a target height using the power law."""
+
+    speed_height = speed_ref * (height / height_ref)**alpha
+
+    return speed_height
+
