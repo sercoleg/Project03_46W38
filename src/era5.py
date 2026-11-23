@@ -1,5 +1,6 @@
 import glob
 import xarray as xr
+import numpy as np
 
 class ERA5Data:
     """ Load and process ERA5 reanalysis data."""
@@ -20,3 +21,19 @@ class ERA5Data:
         point = self.data.interp(latitude=latitude, longitude=longitude)
 
         return point
+
+def uv_to_speed_direction(u,v):
+    """ Convert wind components u and v to wind speed and wind meteorological
+    direction."""
+
+    speed = np.sqrt(u**2 + v**2)
+    direction = (270 - np.degrees(np.arctan2(v, u))) % 360
+
+    # Fix new variables names and units
+    speed.name = "wind_speed"
+    speed.attrs["units"] = "m s**-1"
+
+    direction.name = "wind_direction"
+    direction.attrs["units"] = "degrees"
+
+    return speed, direction
