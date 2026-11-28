@@ -15,10 +15,13 @@ class ERA5Data:
         # concatenate data in datasets using time dimension
         self.data = xr.concat(datasets, dim="time")
 
-    def interpolate(self, latitude, longitude):
-        """Interpolate ERA5 data at a given location."""
+    def interpolate(self, latitude, longitude, start_year=1997, end_year=2008):
+        """Interpolate ERA5 data at a given location for a period of years."""
 
-        point = self.data.interp(latitude=latitude, longitude=longitude)
+        # select period before interpolating
+        data_period = self.data.sel(time=slice(str(start_year), str(end_year)))
+
+        point = data_period.interp(latitude=latitude, longitude=longitude)
 
         return point
 
